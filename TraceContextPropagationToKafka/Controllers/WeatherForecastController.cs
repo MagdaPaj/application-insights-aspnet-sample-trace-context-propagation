@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using TraceContextPropagationToKafka.Kafka;
 
@@ -42,11 +43,22 @@ namespace TraceContextPropagationToKafka.Controllers
         }
 
         [HttpPost]
-        public ActionResult PostWeatherForecast(WeatherForecast weatherForecast)
+        public ActionResult Post(WeatherForecast weatherForecast)
         {
-            _producer.Produce(_kafkaConfiguration.Topics.Demo, weatherForecast, new Dictionary<string, string> { { "foo", "bar"} });
+            var headers = new Dictionary<string, string>();
+            var traceparent = GetTraceparent();
+            if (!string.IsNullOrEmpty(traceparent))
+            {
+                headers.Add("traceparent", traceparent);
+            }
+            _producer.Produce(_kafkaConfiguration.Topics.Demo, weatherForecast, headers);
 
             return Content("OK");
+        }
+
+        private static string GetTraceparent()
+        {
+            return !string.IsNullOrEmpty(Activity.Current?.Id) ? Activity.Current.Id : string.Empty;
         }
     }
 }
