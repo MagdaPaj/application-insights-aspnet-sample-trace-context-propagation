@@ -3,10 +3,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using TraceContextPropagationToKafka.Kafka;
 
 namespace TraceContextPropagationToKafka.Controllers
 {
+
     [ApiController]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
@@ -17,10 +18,14 @@ namespace TraceContextPropagationToKafka.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly KafkaConfiguration _kafkaConfiguration;
+        private readonly KafkaProducer<WeatherForecast> _producer;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, KafkaConfiguration kafkaConfiguration, KafkaProducer<WeatherForecast> producer)
         {
             _logger = logger;
+            _kafkaConfiguration = kafkaConfiguration;
+            _producer = producer;
         }
 
         [HttpGet]
@@ -34,6 +39,14 @@ namespace TraceContextPropagationToKafka.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost]
+        public ActionResult PostWeatherForecast(WeatherForecast weatherForecast)
+        {
+            _producer.Produce(_kafkaConfiguration.Topics.Demo, weatherForecast, new Dictionary<string, string> { { "foo", "bar"} });
+
+            return Content("OK");
         }
     }
 }
