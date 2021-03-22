@@ -30,7 +30,8 @@ namespace TraceContextPropagationToKafka
             Configuration.Bind("Kafka", kafkaConfig);
             services
                 .AddSingleton(kafkaConfig)
-                .AddSingleton<KafkaProducer<WeatherForecast>>();
+                .AddSingleton<KafkaProducer<WeatherForecast>>()
+                .AddApplicationInsightsTelemetry();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
