@@ -51,12 +51,22 @@ namespace TraceContextPropagationToKafka.Controllers
                 headers.Add("traceparent", traceparent);
             }
 
+            var tracestate = GetTracestate();
+            if (!string.IsNullOrEmpty(tracestate))
+            {
+                headers.Add("tracestate", tracestate);
+            }
+
             return headers;
         }
 
         private static string GetTraceparent()
         {
             return !string.IsNullOrEmpty(Activity.Current?.Id) ? Activity.Current.Id : string.Empty;
+        }
+        private static string GetTracestate()
+        {
+            return !string.IsNullOrEmpty(Activity.Current?.TraceStateString) ? Activity.Current.TraceStateString : string.Empty;
         }
     }
 }
