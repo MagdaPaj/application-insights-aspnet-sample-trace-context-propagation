@@ -15,7 +15,6 @@ services:
       - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: "demo:1:1"
       KAFKA_LISTENERS: LISTENER_DOCKER_INTERNAL://:29092,LISTENER_DOCKER_EXTERNAL://:9092
       KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:29092,LISTENER_DOCKER_EXTERNAL://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
@@ -33,5 +32,19 @@ services:
       KAFKA_BROKERCONNECT: kafka:29092
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
+    depends_on:
+      - kafka
+
+  tracecontextpropagationtokafka:
+    image: tracecontextpropagationtokafka
+    build:
+      context: .
+      dockerfile: TraceContextPropagationToKafka/Dockerfile
+    env_file:
+      # If a tracecontextpropagationtokafka_env environment variable is set, grab the env file with the name
+      # from that variable. Else use default.env
+      - ${tracecontextpropagationtokafka_env:-default}.env
+    ports:
+      - "5000:5000"
     depends_on:
       - kafka
