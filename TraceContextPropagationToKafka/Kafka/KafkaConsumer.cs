@@ -62,14 +62,9 @@ namespace TraceContextPropagationToKafka.Kafka
             if (traceparentHeader != null)
             {
                 var traceparent = System.Text.Encoding.UTF8.GetString(traceparentHeader.GetValueBytes());
-                try
+                if (!operation.Telemetry.Context.TrySetTraceContextWithTraceparent(traceparent))
                 {
-                    operation.Telemetry.Context.Operation.Id = GetOperationId(traceparent);
-                    operation.Telemetry.Context.Operation.ParentId = GetOperationParentId(traceparent);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Unexpected traceparent format! Skipping update of the operation context.");
+                    _logger.LogWarning($"Skipping update of the operation context. Review traceparent format, received {traceparent}");
                     return;
                 }
             }
@@ -78,20 +73,9 @@ namespace TraceContextPropagationToKafka.Kafka
             if (tracestateHeader != null)
             {
                 var tracestate = System.Text.Encoding.UTF8.GetString(tracestateHeader.GetValueBytes());
-                Activity.Current.TraceStateString = tracestate;
+                Activity.Current.SetTraceContextWithTracestate(tracestate);
             }
         }
 
-        // Traceparent is a composition of operationId and operationParentId.
-        // It has the following format 00-operationId-operationParentId-00
-        private static string GetOperationId(string traceparent)
-        {
-            return traceparent.Split('-').ElementAt(1);
-        }
-
-        private static string GetOperationParentId(string traceparent)
-        {
-            return traceparent.Split('-').ElementAt(2);
-        }
     }
 }

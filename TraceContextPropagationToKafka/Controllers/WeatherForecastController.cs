@@ -46,13 +46,13 @@ namespace TraceContextPropagationToKafka.Controllers
         private static Dictionary<string, string> PopulateHeaders()
         {
             var headers = new Dictionary<string, string>();
-            var traceparent = GetTraceparent();
+            var (traceparent, tracestate) = Activity.Current.GetTraceContext();
+
             if (!string.IsNullOrEmpty(traceparent))
             {
                 headers.Add(HeaderNames.TraceParent, traceparent);
             }
 
-            var tracestate = GetTracestate();
             if (!string.IsNullOrEmpty(tracestate))
             {
                 headers.Add(HeaderNames.TraceState, tracestate);
@@ -61,13 +61,6 @@ namespace TraceContextPropagationToKafka.Controllers
             return headers;
         }
 
-        private static string GetTraceparent()
-        {
-            return !string.IsNullOrEmpty(Activity.Current?.Id) ? Activity.Current.Id : string.Empty;
-        }
-        private static string GetTracestate()
-        {
-            return !string.IsNullOrEmpty(Activity.Current?.TraceStateString) ? Activity.Current.TraceStateString : string.Empty;
-        }
+
     }
 }
