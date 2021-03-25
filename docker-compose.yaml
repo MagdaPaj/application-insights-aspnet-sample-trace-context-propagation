@@ -41,7 +41,8 @@ services:
       context: .
       dockerfile: TraceContextPropagationToKafka/Dockerfile
     environment:
-      - Kafka__ClientConfig__BootstrapServers=kafka:29092
+        Kafka__ClientConfig__BootstrapServers: kafka:29092
+        ApplicationInsights__ConnectionString: <ENTER_APPLICATION_INSIGHTS_CONNECTION_STRING>
     ports:
       - "5000:5000"
     depends_on:
