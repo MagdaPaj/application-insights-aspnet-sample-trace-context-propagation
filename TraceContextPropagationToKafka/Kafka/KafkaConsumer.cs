@@ -4,6 +4,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
@@ -57,7 +58,7 @@ namespace TraceContextPropagationToKafka.Kafka
                 return;
             }
 
-            var traceparentHeader = headers.FirstOrDefault(h => h.Key == "traceparent");
+            var traceparentHeader = headers.FirstOrDefault(h => h.Key == HeaderNames.TraceParent);
             if (traceparentHeader != null)
             {
                 var traceparent = System.Text.Encoding.UTF8.GetString(traceparentHeader.GetValueBytes());
@@ -73,7 +74,7 @@ namespace TraceContextPropagationToKafka.Kafka
                 }
             }
 
-            var tracestateHeader = headers.FirstOrDefault(h => h.Key == "tracestate");
+            var tracestateHeader = headers.FirstOrDefault(h => h.Key == HeaderNames.TraceState);
             if (tracestateHeader != null)
             {
                 var tracestate = System.Text.Encoding.UTF8.GetString(tracestateHeader.GetValueBytes());

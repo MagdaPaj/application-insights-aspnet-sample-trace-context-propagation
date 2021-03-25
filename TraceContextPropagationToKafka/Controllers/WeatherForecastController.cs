@@ -2,6 +2,7 @@
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using TraceContextPropagationToKafka.Kafka;
@@ -48,13 +49,13 @@ namespace TraceContextPropagationToKafka.Controllers
             var traceparent = GetTraceparent();
             if (!string.IsNullOrEmpty(traceparent))
             {
-                headers.Add("traceparent", traceparent);
+                headers.Add(HeaderNames.TraceParent, traceparent);
             }
 
             var tracestate = GetTracestate();
             if (!string.IsNullOrEmpty(tracestate))
             {
-                headers.Add("tracestate", tracestate);
+                headers.Add(HeaderNames.TraceState, tracestate);
             }
 
             return headers;
