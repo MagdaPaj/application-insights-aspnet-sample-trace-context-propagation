@@ -2,19 +2,18 @@ version: "3.7"
 
 services:
   zookeeper:
-    image: "bitnami/zookeeper:latest"
+    image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
 
   kafka:
-    image: "bitnami/kafka:latest"
+    image: wurstmeister/kafka
     ports:
       - "9092:9092"
       - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
+      KAFKA_CREATE_TOPICS: "demo:1:1"
       KAFKA_LISTENERS: LISTENER_DOCKER_INTERNAL://:29092,LISTENER_DOCKER_EXTERNAL://:9092
       KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:29092,LISTENER_DOCKER_EXTERNAL://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
