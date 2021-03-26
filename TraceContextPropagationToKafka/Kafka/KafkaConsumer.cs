@@ -35,8 +35,7 @@ namespace TraceContextPropagationToKafka.Kafka
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Task.Run(() => Consume(stoppingToken));
-            return Task.CompletedTask;
+            return Task.Run(() => Consume(stoppingToken));
         }
 
         private void Consume(CancellationToken stoppingToken)
