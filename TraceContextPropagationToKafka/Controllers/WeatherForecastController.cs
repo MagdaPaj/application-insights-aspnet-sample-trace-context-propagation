@@ -2,9 +2,6 @@
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
-using System.Collections.Generic;
-using System.Diagnostics;
 using TraceContextPropagationToKafka.Kafka;
 
 namespace TraceContextPropagationToKafka.Controllers
@@ -35,32 +32,11 @@ namespace TraceContextPropagationToKafka.Controllers
             using (var operation = _telemetryClient.StartOperation<DependencyTelemetry>($"Produce to Kafka topic {topic}"))
             {
                 operation.Telemetry.Type = "Kafka Broker";
-                var headers = PopulateHeaders();
-                _producer.Produce(topic, weatherForecast, headers);
+                _producer.Produce(topic, weatherForecast);
                 _logger.LogInformation("Message successfully produced to Kafka");
             };
 
             return Content("OK");
         }
-
-        private static Dictionary<string, string> PopulateHeaders()
-        {
-            var headers = new Dictionary<string, string>();
-            var (traceparent, tracestate) = Activity.Current.GetTraceContext();
-
-            if (!string.IsNullOrEmpty(traceparent))
-            {
-                headers.Add(HeaderNames.TraceParent, traceparent);
-            }
-
-            if (!string.IsNullOrEmpty(tracestate))
-            {
-                headers.Add(HeaderNames.TraceState, tracestate);
-            }
-
-            return headers;
-        }
-
-
     }
 }

@@ -5,10 +5,10 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,14 +40,21 @@ namespace TraceContextPropagationToKafka.Kafka
 
         private void Consume(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                var result = _consumer.Consume(stoppingToken);
-                // Start telemetry tracking
-                using var operation = _telemetryClient?.StartOperation<RequestTelemetry>("Consumed message from Kafka");
-                _logger.LogInformation($"Received: {JsonConvert.SerializeObject(result.Message.Value)}");
-                UpdateTelemetryOperationContext(result.Message.Headers, operation);
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    var result = _consumer.Consume(stoppingToken);
+                    // Start telemetry tracking
+                    using var operation = _telemetryClient?.StartOperation<RequestTelemetry>("Consumed message from Kafka");
+                    UpdateTelemetryOperationContext(result.Message.Headers, operation);
+                }
             }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogDebug(ex, "Operation cancelled");
+            }
+            
         }
 
         private void UpdateTelemetryOperationContext(Headers headers, IOperationHolder<RequestTelemetry> operation = null)
@@ -60,8 +67,8 @@ namespace TraceContextPropagationToKafka.Kafka
             var traceparentHeader = headers.FirstOrDefault(h => h.Key == HeaderNames.TraceParent);
             if (traceparentHeader != null)
             {
-                var traceparent = System.Text.Encoding.UTF8.GetString(traceparentHeader.GetValueBytes());
-                if (!operation.Telemetry.Context.TrySetTraceContextWithTraceparent(traceparent))
+                var traceparent = Encoding.UTF8.GetString(traceparentHeader.GetValueBytes());
+                if (!operation.Telemetry.Context.TrySetOperationContextFromTraceparent(traceparent))
                 {
                     _logger.LogWarning($"Skipping update of the operation context. Review traceparent format, received {traceparent}");
                     return;
@@ -71,10 +78,9 @@ namespace TraceContextPropagationToKafka.Kafka
             var tracestateHeader = headers.FirstOrDefault(h => h.Key == HeaderNames.TraceState);
             if (tracestateHeader != null)
             {
-                var tracestate = System.Text.Encoding.UTF8.GetString(tracestateHeader.GetValueBytes());
+                var tracestate = Encoding.UTF8.GetString(tracestateHeader.GetValueBytes());
                 Activity.Current.SetTraceContextWithTracestate(tracestate);
             }
         }
-
     }
 }

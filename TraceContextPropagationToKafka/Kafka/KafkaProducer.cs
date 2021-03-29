@@ -1,6 +1,6 @@
 ﻿using Confluent.Kafka;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using TraceContextPropagationToKafka.Kafka;
 
@@ -18,12 +18,14 @@ namespace TraceContextPropagationToKafka
                 .Build();
         }
 
-        public void Produce(string topic, WeatherForecast message, IDictionary<string, string> headers)
+        public void Produce(string topic, WeatherForecast message)
         {
             var msg = new Message<Null, WeatherForecast>
             {
                 Value = message
             };
+
+            var headers = Activity.Current?.PopulateHeaders();
 
             foreach (var kvp in headers)
             {
