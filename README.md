@@ -1,6 +1,8 @@
-# Trace Context propagation code sample
+# Distributed Trace Context propagation code sample
 
-This sample application is the ASP.NET Core web API with enabled [Azure Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core). Request body from the POST API is sent to Kafka, and then it's consumed by a [KafkaConsumer](./TraceContextPropagationToKafka/Kafka/KafkaConsumer.cs). The sample code shows how to propagate [trace context](https://www.w3.org/TR/trace-context/) to Kafka and then how to extract it from Kafka messages, thus end-to-end distributed tracing can be achieved.
+Distributed tracing is a diagnostic technique that helps to localize failures and performance issues within applications, especially those built using a microservices architecture. A distributed trace traverses more than one component, so it is required to uniquely identify it across all systems. Trace context is a unique identifier for individual operations and it allows data to be linked together. There is a W3C specification for standardizing trace context (go to [the W3C Trace Context web page](https://www.w3.org/TR/trace-context/) to learn more about it).
+
+This sample application is the ASP.NET Core web API. Request body from the POST API is sent to Kafka, and then it's consumed by a [KafkaConsumer](./TraceContextPropagationToKafka/Kafka/KafkaConsumer.cs). [Azure Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core) is used to monitor the application. Azure Application Insights SDKs automatically track incoming HTTP requests and calls to dependent services, such as HTTP requests. However, there is a class of application patterns that can't be supported generically and manual code instrumentation is required. The sample code shows how to manually instrument Kafka dependency, how to propagate W3C compliant trace context to Kafka, and then how to extract it from Kafka messages. Thus end-to-end distributed tracing in the application can be achieved.
 
 ## Prerequisites
 
