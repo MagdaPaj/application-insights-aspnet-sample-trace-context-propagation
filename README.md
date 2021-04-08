@@ -2,7 +2,14 @@
 
 Distributed tracing is a diagnostic technique that helps to localize failures and performance issues within applications, especially those built using a microservices architecture. A distributed trace traverses more than one component, so it is required to uniquely identify it across all systems. Trace context is a unique identifier for individual operations and it allows data to be linked together. There is a W3C specification for standardizing trace context (go to [the W3C Trace Context web page](https://www.w3.org/TR/trace-context/) to learn more about it).
 
-This sample application is the ASP.NET Core web API. Request body from the POST API is sent to Kafka, and then it's consumed by a [KafkaConsumer](./TraceContextPropagationToKafka/Kafka/KafkaConsumer.cs). [Azure Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core) is used to monitor the application. Azure Application Insights SDKs automatically track incoming HTTP requests and calls to dependent services, such as HTTP requests. However, there is a class of application patterns that can't be supported generically and manual code instrumentation is required. The sample code shows how to manually instrument Kafka dependency, how to propagate W3C compliant trace context to Kafka, and then how to extract it from Kafka messages. Thus end-to-end distributed tracing in the application can be achieved.
+This sample application is the ASP.NET Core web API. Request body from the POST API is sent to Kafka, and then it's consumed by a [KafkaConsumer](./TraceContextPropagationToKafka/Kafka/KafkaConsumer.cs).
+
+![architecture](./images/architecture.png)
+**Figure 1: Architecture diagram**
+
+[Azure Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core) is used to monitor the application. Azure Application Insights SDKs automatically track incoming HTTP requests and calls to dependent services, such as HTTP requests, SQL queries. However, there is a class of application patterns that can't be supported generically and manual code instrumentation is required. One example that requires custom tracking is an application that publishes or consumes messages from Kafka as this is not automatically tracked by the Application Insights SDKs.
+
+The goal of the sample code is to demonstrate how to achieve end-to-end distributed tracing in applications that use Kafka (for publishing and/or consuming messages). The sample code shows how to manually instrument Kafka dependency, how to propagate W3C compliant trace context to Kafka, and then how to extract it from Kafka messages.
 
 ## Prerequisites
 
@@ -49,15 +56,15 @@ curl -X POST "http://localhost:5000/WeatherForecast" -H  "Content-Type: applicat
 Then you should receive `OK` response. Navigate to http://localhost:9000/topic/demo/messages (kafdrop tool) to view a message sent to Kafka. The message contains a [traceparent header](https://www.w3.org/TR/trace-context/#traceparent-header).
 
 ![kafka-message](./images/kafka-message-with-traceparent-header.png)
-**Figure 1: Kafka message with traceparent header**
+**Figure 2: Kafka message with traceparent header**
 
 To view all operations that are related to this single POST request login to Azure Portal, then navigate to Application Insights that you connected with the application and open the [Performance panel](https://docs.microsoft.com/en-us/azure/azure-monitor/learn/tutorial-performance#identify-slow-server-operations). Under the Operations tab, you will see `POST WeatherForecast/Post`. Once you click on it, you can select a sample operation and view End-to-end transaction details.
 
 ![performance-overview](./images/performance-overview.png)
-**Figure 1: Application Insights performance overview**
+**Figure 3: Application Insights performance overview**
 
 ![e2e-transaction-details](./images/e2e-transaction-details.png)
-**Figure 1: Application Insights E2E transaction details**
+**Figure 4: Application Insights E2E transaction details**
 
 If you want to see this data in logs, get an `operation_Id` of the operation. It is visible in End-to-end transaction details or you can take it from traceparent header ([check how it's mapped to `operation_Id`](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation#correlation-headers-using-w3c-tracecontext)). Then use the following query:
 ```
@@ -74,7 +81,7 @@ curl -X POST "http://localhost:5000/WeatherForecast" -H  "Content-Type: applicat
 You should see that `tracestate` header is propagated to Kafka and it's added to `customDimensions` in Application Insights logs.
 
 ![kafka-message-with-tracestate](./images/kafka-message-with-tracestate-header.png)
-**Figure 1: Kafka message with tracestate header**
+**Figure 5: Kafka message with tracestate header**
 
 ![logs-with-tracestate](./images/logs-with-tracestate.png)
-**Figure 1: Logs with tracestate header**
+**Figure 6: Logs with tracestate header**
