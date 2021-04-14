@@ -9,7 +9,7 @@ This sample application is the ASP.NET Core web API. Request body from the POST 
 
 [Azure Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/asp-net-core) is used to monitor the application. Azure Application Insights SDKs automatically track incoming HTTP requests and calls to dependent services, such as HTTP requests, SQL queries. However, there is a class of application patterns that can't be supported generically and manual code instrumentation is required. One example that requires custom tracking is an application that publishes or consumes messages from Kafka as this is not automatically tracked by the Application Insights SDKs.
 
-The goal of the sample code is to demonstrate how to achieve end-to-end distributed tracing in applications that use Kafka (for publishing and/or consuming messages). The sample code shows how to manually instrument Kafka dependency, how to propagate W3C compliant trace context to Kafka, and then how to extract it from Kafka messages.
+The goal of the sample code is to demonstrate how to achieve end-to-end distributed tracing in applications that use Kafka (for publishing and/or consuming messages). The sample code shows how to manually instrument Kafka dependency, how to propagate W3C compliant trace context to Kafka, and then how to extract it from Kafka messages. Without adding the code, the trace context is not propagated.
 
 ## Prerequisites
 
